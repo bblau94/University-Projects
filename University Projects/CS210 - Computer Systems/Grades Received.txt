@@ -1,0 +1,3 @@
+Grades Received for:
+PA0 - 100/100 (Bubble Sort and Binary Search)
+PA1 - 40/40

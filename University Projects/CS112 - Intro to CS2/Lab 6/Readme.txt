@@ -1,0 +1,1 @@
+This assignment required us to work with various algorithms to produce best case, average case, worst case results on sets of data. The Grapher.java code was provided as was parts of the SortExperiment file. We were tasked with completing the SortExperiment program.

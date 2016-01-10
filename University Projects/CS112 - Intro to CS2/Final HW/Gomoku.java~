@@ -1,0 +1,284 @@
+/* Title:  Gomoku.java
+ * Author: Ben Blau (bblau94@gmail.com)
+ * Date: 12/8/13
+ * Class: CS 112, Fall 2013
+ * Purpose: This code is the extended version of TicTacToe by Wayne Synder. This is Gomoku.
+ * Starter code for the final project assignment provided by Wayne Snyder. The final edit is by Ben Blau
+ * and Tyler Butler.
+ */ 
+
+import java.util.*;
+
+public class Gomoku {
+   
+   private static int[][] B = new int[3][3];
+   
+   // pieces are encoded as 10 and 1, so that summing across rows or columns will
+   //    give a simple method for finding how many pieces occur: the 10's place
+   //    gives how many X's, and the 1's place gives how many O's: e.g., XBO = 10+0+1 = 11. 
+   //    11 / 10 = 1 X, and 11 % 10 = 1 O. 
+   
+   private final static int X = 10;    
+   private final static int O = 1; 
+   private final static int Blank = 0; 
+   
+   // just to conveniently print out names of pieces: Piece[X] = "X" etc.
+   
+   private static String[] Piece =  {" ", "O", "", "", "", "", "", "", "", "", "X" }; 
+   
+   private static final int maxDepth = 3;         // maximum search depth
+   
+   // moves are represented by integers 0 .. 8, e.g.
+   //     0  1  2
+   //     3  4  5
+   //     6  7  8
+   // so can recover row and column using / and %:
+   
+   private static  int column(int move) {
+      return move % 3;
+   }
+   
+   private static  int row(int move) {
+      return move / 3;
+   }
+   
+   // return true if 3 X's occur in any row, column, or diagonal; this is same as
+   // checking if sum = 30:
+   
+   private static boolean winForX(int[][] B) {
+      return (
+              ((B[0][0]+B[0][1]+B[0][2]) == 30) ||    // top row is all X's
+              ((B[1][0]+B[1][1]+B[1][2]) == 30) ||    // etc.
+              ((B[2][0]+B[2][1]+B[2][2]) == 30) ||
+              ((B[0][0]+B[1][0]+B[2][0]) == 30) ||
+              ((B[0][1]+B[1][1]+B[2][1]) == 30) ||
+              ((B[0][2]+B[1][2]+B[2][2]) == 30) ||
+              ((B[0][0]+B[1][1]+B[2][2]) == 30) ||
+              ((B[2][0]+B[1][1]+B[0][2]) == 30) 
+             );
+   }
+   
+   // similarly for O:
+   
+   private static boolean winForO(int[][] B) {
+      return (
+              ((B[0][0]+B[0][1]+B[0][2]) == 3) ||     // top row is all O's
+              ((B[1][0]+B[1][1]+B[1][2]) == 3) ||     // etc.
+              ((B[2][0]+B[2][1]+B[2][2]) == 3) ||
+              ((B[0][0]+B[1][0]+B[2][0]) == 3) ||
+              ((B[0][1]+B[1][1]+B[2][1]) == 3) ||
+              ((B[0][2]+B[1][2]+B[2][2]) == 3) ||
+              ((B[0][0]+B[1][1]+B[2][2]) == 3) ||
+              ((B[2][0]+B[1][1]+B[0][2]) == 3) 
+             );
+   }
+   
+   // return true if no blank slots or if is a win for X or O
+   
+   private static  boolean isLeaf(int[][] B) {
+      if(winForX(B) || winForO(B))
+         return true;
+      
+      for(int row = 0; row < 3; ++row) {        // check if any slot != 0
+         for(int col = 0; col < 3; ++col) {
+            if(B[row][col] == Blank) 
+               return false;                    // if found, return false
+         }
+      }
+      return true;                              // didn't find one, return true
+   }
+   
+   // Evaluation function: count the number of available rows, columns, or 
+   // diagonals that X or O could complete for a win, by counting pieces in each.
+   // But first check if is a win for either player, and make a win at a closer level
+   // worth more than a win further down, by using 1000-depth (so win one level down
+   // is worth 999 and win at 3 levels down is worth 997.  Any win will be worth more
+   // than a non-win, but comparing wins at different levels will prefer the closer win.
+   
+   private static  int eval(int[][] B, int depth) {
+      
+      if(winForX(B))
+         return 1000-depth;               // win at smaller depth is preferred
+      else if(winForO(B))
+         return -(1000-depth);
+      
+      int sum = 0;
+      
+      // count rows
+      for(int r = 0; r < 3; ++r) 
+         sum += countPieces(B[r][0],B[r][1],B[r][2]);
+      
+      // count columns
+      for(int c = 0; c < 3; ++c) 
+         sum += countPieces(B[0][c],B[1][c],B[2][c]);
+      
+      // count diagonals
+      sum += countPieces(B[0][0],B[1][1],B[2][2]);
+      
+      sum += countPieces(B[0][2],B[1][1],B[2][0]);
+      
+      return sum;
+      
+   }
+   
+   
+   // Given three board values (where X = 10, O = 1, blank  = 0), 
+   // counts number of X's if only X's occur, result is positive;
+   // counts number of O's if only O's occur, result is negative. 
+   // Sum of these two is returned.
+   
+   private static int countPieces(int a, int b, int c) {
+      int n = a + b + c;
+      int numX = n / 10;
+      int numO = n % 10;
+      if(numX > 0 && numO > 0)
+         return 0;        // no move for either in this row, return 0
+      else if(numO == 0)  // only X's in this sequence
+         return numX;
+      else if(numX == 0)  // only O's in this sequence
+         return -numO; 
+      return 0;           // needed for compilation
+   }
+   
+   // top level minMax method, returns move instead of value of node
+   
+   private static  int chooseMove(int[][] B) { 
+      int max = -1000;     
+      int bestMove = -1;  
+      for(int move = 0; move < 9; ++move) { 
+         
+         if(B[row(move)][column(move)] == Blank) {   // move is available
+            
+            B[row(move)][column(move)] = X;       // make the move 
+            
+            int val = minMax( B, 1 ); 
+            if(val > max) {                       // if better move, remember it
+               bestMove = move; 
+               max = val; 
+            } 
+            B[row(move)][column(move)] = Blank;        // undo the move
+            
+         }  
+      }  
+      return bestMove; 
+   }   
+   
+
+   
+   // recursive minMax called by top level chooseMove; returns value of current board
+   
+   private static int minMax(int[][] B, int depth) { 
+      if( isLeaf(B) || depth == maxDepth)  
+         return eval(B, depth);  
+      else if( depth % 2 == 0 ) {       // even levels are max, X player           
+         int max = -1000; 
+         for(int move = 0; move < 9; ++move) {
+            if(B[row(move)][column(move)] == 0) {    // move is available
+               
+               B[row(move)][column(move)] = X;       // make the move  
+               
+               int val = minMax( B, depth + 1 );  
+               if(val > max) { 
+                  max = val;                         // if this is best, update
+               } 
+               B[row(move)][column(move)] = Blank;       // undo the move and try next move 
+            }
+         }
+         return max; 
+      } else {                          // is a min node, O player
+         int min = 1000; 
+         for(int move = 0; move < 9; ++move) {
+            if(B[row(move)][column(move)] == 0) {    // move is available
+               
+               B[row(move)][column(move)] = O;       // make the move  
+               
+               int val = minMax( B, depth + 1 ); 
+               if(val < min) { 
+                  min = val;                         // if this is best, update
+               }
+               B[row(move)][column(move)] = Blank;   // undo the move and try next move    
+            }
+         }
+         return min; 
+      }
+   }
+   
+   
+   private static void printBoard(int [][] B) {
+      
+      System.out.println("\t-------------");
+      System.out.println("\t| " + Piece[B[0][0]] + " | " + Piece[B[0][1]] + " | " + Piece[B[0][2]] + " |"); 
+      System.out.println("\t-------------");
+      System.out.println("\t| " + Piece[B[1][0]] + " | " + Piece[B[1][1]] + " | " + Piece[B[1][2]] + " |"); 
+      System.out.println("\t-------------");
+      System.out.println("\t| " + Piece[B[2][0]] + " | " + Piece[B[2][1]] + " | " + Piece[B[2][2]] + " |"); 
+      System.out.println("\t-------------"); 
+   }
+   
+   
+   
+   public static void main(String [] args) {
+      
+      System.out.println("Tic-Tac-Toe Game: You are playing O, and the computer");
+      System.out.println("\twill play X; type in a move using digits 0 .. 8:");
+      System.out.println("\t\t-------------");
+      System.out.println("\t\t| 0 | 1 | 2 |"); 
+      System.out.println("\t\t-------------");
+      System.out.println("\t\t| 3 | 4 | 5 |");  
+      System.out.println("\t\t-------------");
+      System.out.println("\t\t| 6 | 7 | 8 |");  
+      System.out.println("\t\t-------------"); 
+      System.out.println("\tTo end the game early, type Control-D."); 
+      
+      int moveX  = chooseMove(B);                     // machine chooses first move       
+      B[row(moveX)][column(moveX)] = X;
+      
+      System.out.println("\nX's Move:");
+      printBoard(B); 
+      
+      Scanner sc = new Scanner(System.in); 
+      System.out.println("What is your move?"); 
+      
+      while(sc.hasNextInt()) { 
+         
+         // O's move
+         int moveO = sc.nextInt(); 
+         
+         if(B[row(moveO)][column(moveO)] == Blank) {    // if this is possible move
+            
+            B[row(moveO)][column(moveO)] = O;           // make the move
+            
+            System.out.println("O's Move:");
+            printBoard(B);
+            
+            if(winForO(B)) {                            // if O wins, stop!
+               System.out.println("Win for O!");
+               break;
+            }
+            
+            moveX  = chooseMove(B);                     // machine chooses a move
+            
+            B[row(moveX)][column(moveX)] = X;           // make the move
+            
+            System.out.println("\nX's Move:");
+            printBoard(B);
+            
+            if(winForX(B)) {                            // if X wins, stop!
+               System.out.println("Win for X!");
+               break;
+            }
+            
+            if(isLeaf(B)) {                             // X is last to move, so check if tie
+               System.out.println("Tie Game!"); 
+               break; 
+            }
+         }
+         else {
+            System.out.println("Illegal move, try again...."); 
+         }
+         System.out.println("What is your move?"); 
+      }
+         
+   }
+     
+}

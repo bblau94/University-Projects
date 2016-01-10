@@ -1,0 +1,34 @@
+Ben Blau
+CS 455 PA 2
+Due: 10/30/14 at 1:00PM
+
+Documentation and Statistics
+
+How to compile and run:
+
+Start by compiling all of the required files for StudentNetworkSimulator given on the pa2 web page. All of the files must be in the same location (these files include Project, Packet, OSIRandom, NetworkSimulator, StudentNetworkSimulator, Message, EventListImpl, EventList, and Event). Once everything is compiled you can run Project.java to test everything. Project.java runs StudentNetworkSimulator. You can change certain variables in Project.java to get the desired test cases.
+
+
+Statistics:
+I picked a timer with 25 units because I encountered a timer time out when using 15 units because this was not enough time for an ACK response to occur. This was with no corruption or loss. When using a higher time unit I found that several time intervals were being wasted for a time out when there was obvious corruption. I found this when determining the rtt statistics. Looking at the rtt statistics we can see a lower time out could potentially work; however, this chosen time out proved to work most appropriately in all of my tests. Using 100 messages there were 0 retransmitted packets when testing with no loss or corruption. As a function of loss, retransmitted packets – 98%.
+
+
+ 
+Retransmission timer justification: I picked a timer of 25 units because when tested with a timer of 15 units with no loss or corruption it timed out and resent packets simply because there wasn't enough time alotted for an ACK response. I first increased to 30, but then after calculating RTT statistics and seeing that there were several intervals of time being wasted waiting for a timeout when there was an obvious corruption, I lowered this to 25. While a lower timeout could possibly work using evidence from RTT statistics, a timeout of 25 has been shown to work in every case without timing out prematurely during my testing. 
+Program Design/Layout:
+The program made for pa2, StudentNetworkSimulator, is designed to use the objects given to use from the network simulator. To start, all of the necessary variables are declared for later use. Project.java calls StudentNetworkSimulator and specific values can be modified from within Project.java to get different desired results (such as loss, corruption, etc). The StudentNetworkSimulator has different functions to perform the appropriate input and output functions for the sender and then the input of the received. We did not make a function to handle the output for the receiver since we did not have to transmit back to the sender in this way. The overall function of each method is relatively straight forward as far as, aOutput handles the sender, A’s, output. aInput handles the input for the sender, etc. aOutput handles the output of a by first checking if the current incoming message will fit in the sliding window and if it does not it will store the message in a buffer. It will later be put into a packet to be sent once the packets that are in the window at that time are acknowledged. In the case where the window does not receive all of the necessary ACK’s, aOutput will make a packet with the correct sequence number, compute the check sum, and then send the packet toLayer3(). Helper methods are used to calculate check sum (calcCheckSum) and construct the packet bufferMsg. When the first packet enters the window a timer is started.
+
+The aInput function is used when A gets a packet from B. This function checks for corruption as well as duplicate ACKs. If the ACKs received are duplicates then a helper method (retransmitMsg) is used to resend the current window and unACK’d packets. If the appropriate ACKs are received they will be put into a buffer and then the base variable is incremented to move the window down. bInput is used in the situation that a packet is received from A. Corruption is checked for first and then the received sequence number and the expected one are compared. If packets are corrupted, B will not do anything causing the time out. At that point the sender, A, will resend the packet window. If the calculated check sum differs from the received check sum then there was loss. B will send back an ACK for the last correctly received packet. A will then retransmit the window. If the calculated and expected sequence number match we know the packets were received correctly and B will send the ACK, increment the expected sequence number, and send the information toLayer5.
+	Using a helper function (calcCheckSum) I calculated the check sum. This was done by adding the sequence number to the acknowledgement number and then adding that to the multiplication of the length of the payload string and the appropriate character values of the string added together. This equation was - (sequenceNo + ackNo + (sizeOfBytes * sumOfBytes)) = calculatedCheckSum.
+
+Possible extensions and improvements: One improvement would be to implement a selective repeat aqr. This would reduce the number of packets that would need to be resent because the current setup requires the entire section of the window containing the packets to be resent in the event of corruption or loss.
+
+Graphs:
+*Nsim of 80
+
+Confidence: Every graph below is its own test. Using a different seed, each calculation was determined using several tests to help avoid large deviation from other values. 
+
+93% confidence for - Retransmits as a function of corruption
+82% confidence for - Average RTT as a function of loss
+94% confidence for - Average RTT as function of Corruption
+91% confidence for - Average time to communicate packet over loss

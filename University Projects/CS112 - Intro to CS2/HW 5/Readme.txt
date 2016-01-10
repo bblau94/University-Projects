@@ -1,0 +1,1 @@
+This assignment required the completion of an insertion sort algorithm using the given starter code.

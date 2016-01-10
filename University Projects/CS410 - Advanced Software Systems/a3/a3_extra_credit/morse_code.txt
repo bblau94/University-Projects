@@ -1,0 +1,230 @@
+int incomingByte = 0;   // for incoming serial data
+int led = 13;
+
+void setup() {
+        Serial.begin(9600);     // opens serial port, sets data rate to 9600 bps
+        pinMode(led, OUTPUT);
+}
+
+void loop() {
+
+        // send data only when you receive data:
+        if (Serial.available() > 0) {
+                // read the incoming byte:
+                incomingByte = Serial.read();
+                
+                switch (incomingByte) {
+                  case 65: //A
+                    dot(); dash();
+                  break;
+                  case 97: //a
+                    dot(); dash();
+                  break;
+                  case 66: //B
+                    dash();dot();dot();dot();  
+                  break;
+                  case 98: //b
+                    dash();dot();dot();dot(); 
+                  break;
+                  case 67: //C
+                    dash();dot();dash();dot();  
+                  break;
+                  case 99: //c
+                    dash();dot();dash();dot();
+                  break;
+                  case 68: //D
+                    dash();dot();dot();  
+                  break;
+                  case 100: //d
+                    dash();dot();dot();
+                  break;
+                  case 69: //E
+                    dot();  
+                  break;
+                  case 101: //e
+                    dot();
+                  break;
+                  case 70: //F
+                    dot(); dot(); dash(); dot();  
+                  break;
+                  case 102: //f
+                    dot(); dot(); dash(); dot();
+                  break;
+                  case 71: //G
+                     dash();dash();dot();
+                  break;
+                  case 103: //g
+                     dash();dash();dot();
+                  break;
+                  case 72: //H
+                     dot(); dot();dot(); dot();
+                  break;
+                  case 104: //h
+                    dot(); dot();dot(); dot();
+                  break;
+                  case 73: //I
+                     dot(); dot();
+                  break;
+                  case 105: //i
+                    dot(); dot();
+                  break;
+                  case 74: //J
+                     dot(); dash(); dash(); dash();
+                  break;
+                  case 106: //j
+                    dot(); dash(); dash(); dash();
+                  break;
+                  case 75: //K
+                     dash(); dot(); dash(); dot();
+                  break;
+                  case 107: //k
+                    dash(); dot(); dash(); dot();
+                  break;
+                  case 76: //L
+                     dot(); dash(); dot(); dot();
+                  break;
+                  case 108: //l
+                    dot(); dash(); dot(); dot();
+                  break;
+                  case 77: //M
+                     dash(); dash();
+                  break;
+                  case 109: //m
+                     dash(); dash();
+                  break;
+                  case 78: //N
+                     dash(); dot();
+                  break;
+                  case 110: //n
+                     dash(); dot();
+                  break;
+                  case 79: //O
+                     dash(); dash(); dash();
+                  break;
+                  case 111: //o
+                     dash(); dash(); dash();
+                  break;
+                  case 80: //P
+                     dot(); dash(); dash(); dot();
+                  break;
+                  case 112: //p
+                     dot(); dash(); dash(); dot();
+                  break;
+                  case 81: //Q
+                     dash(); dash(); dot(); dash();
+                  break;
+                  case 113: //q
+                     dash(); dash(); dot(); dash();
+                  break;
+                  case 82: //R
+                     dot(); dash(); dot();
+                  break;
+                  case 114: //r
+                     dot(); dash(); dot();
+                  break;
+                  case 83: //S
+                     dot(); dot(); dot();
+                  break;
+                  case 115: //s
+                     dot(); dot(); dot();
+                  break;
+                  case 84: //T
+                     dash();
+                  break;
+                  case 116: //t
+                     dash();
+                  break;
+                  case 85: //U
+                     dot(); dot(); dash();
+                  break;
+                  case 117: //u
+                     dot(); dot(); dash();
+                  break;
+                  case 86: //V
+                     dot(); dot(); dot(); dash();
+                  break;
+                  case 118: //v
+                     dot(); dot(); dot(); dash();
+                  break;
+                  case 87: //W
+                     dot(); dash(); dash(); 
+                  break;
+                  case 119: //w
+                    dot(); dash(); dash();
+                  break;
+                  case 88: //X
+                    dash(); dot(); dot(); dash();
+                  break;
+                  case 120: //x
+                    dash(); dot(); dot(); dash();
+                  break;
+                  case 89: //Y
+                    dash(); dot(); dash(); dash();
+                   break;
+                  case 121: //y
+                    dash(); dot(); dash(); dash();
+                  break;
+                  case 90: //Z
+                     dash(); dash(); dot(); dot();
+                  break;
+                  case 122: //z
+                     dash(); dash(); dot(); dot();
+                  break;
+                  case 32: //space
+                     delay(1000);
+                  break;
+                  case 48: //0
+                     dash(); dash(); dash(); dash(); dash();
+                  break;
+                  case 49: //1
+                     dot();dash();dash(); dash(); dash();
+                  break;
+                  case 50: //2
+                     dot();dot();dash(); dash(); dash();
+                  break;
+                  case 51: //3
+                     dot();dot();dot();dash(); dash();
+                  break;
+                  case 52: //4
+                     dot();dot();dot();dot();dash();
+                  break;
+                  case 53: //5
+                     dot();dot();dot();dot();dot();
+                  break;
+                  case 54: //6
+                     dash(); dot();dot();dot();dot();
+                  break;
+                  case 55: //7
+                     dash();dash();dot(); dot(); dot();
+                  break;
+                  case 56: //8
+                     dash();dash();dash();dot(); dot();
+                  break;
+                  case 57: //9
+                     dash();dash();dash();dash();dot();
+                  break;
+                  }
+                
+                
+                
+                // say what you got:
+                Serial.print("I received: ");
+                Serial.println(incomingByte, DEC);
+        }
+}
+ 
+void dot()
+{
+  digitalWrite(led, HIGH);
+  delay(250);
+  digitalWrite(led, LOW);
+  delay(250);
+}
+
+void dash()
+{
+  digitalWrite(led, HIGH);
+  delay(750);
+  digitalWrite(led, LOW);
+  delay(250);
+}

@@ -1,6 +1,6 @@
 Ben Blau (bblau94@bu.edu)
 1/31/2014
-CS 235 with Matta
+CS 210 with Matta
 Homework 1
 (Sort.c and Search.c)
 
